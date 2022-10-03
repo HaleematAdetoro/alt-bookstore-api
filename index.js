@@ -4,9 +4,12 @@ const { resolve } = require('path')
 const HOST_NAME = 'localhost'
 const PORT = 4000
 const path = require('path')
+const { brotliDecompressSync } = require('zlib')
 
 const userDbPath = path.join(__dirname, "db", "users.json")
-let usersDB = "";
+const bookDbPath = path.join(__dirname, "db", "books.json")
+let usersDb = [];
+let booksDB =[];
 
 function serverListener(req, res) {
     if (req.url === "/user/create" && req.method === "POST") {
@@ -57,30 +60,78 @@ const getAllUsers = function(req, res){
 }
 
 function createUser(req, res){
-    let userData ="";
+    let userData =[];
 
     req.on('data', (chunk) => {
-        userData += chunk.toString();
+       userData.push(chunk);
     })
     req.on('end', () => {
-        const newUser = userData;
-        
-       
-        usersDB.push(newUser);
-        fs.writeFile(userDbPath, JSON.stringify(usersDB), (err) => {
-            if(err){
-                res.end(err)
+        const parsedUser = Buffer.concat(userData).toString();
+        const newUser = JSON.parse(parsedUser);
+
+        fs.readFile(userDbPath, 'utf8', (err, users) => {
+            if (err){
+                res.end("An error occured")
             }
-            res.end(JSON.stringify(newUser))
+            const oldUsers = JSON.parse(users);
+            const allUsers = [...oldUsers, newUser]
+
+            fs.writeFile(userDbPath, JSON.stringify(allUsers), (err) => {
+                if(err){
+                    res.writeHead(500);
+                    res.end(err)
+                }
+                res.end(JSON.stringify(newUser));
+            })
+        });
+       
     })
+    
+}
+
+function createBook(req, res){
+    let bookDb =[];
+
+    req.on('data', (chunk) => {
+       bookDb.push(chunk);
     })
+    req.on('end', () => {
+        const parsedBook = Buffer.concat(bookDb).toString();
+        const newBook = JSON.parse(parsedBook);
+
+        // const lastBook = booksDB[booksDB.length - 1];
+        // const lastBookId = lastBook.id
+        // newBook.id = lastBookId + 1;
+        // console.log(newBook.id)
 
 
+        fs.readFile(bookDbPath, 'utf8', (err, books) => {
+            if (err){
+                res.end("An error occured")
+            }
+            
+            const oldBooks = JSON.parse(books);
+            const allBooks = [...oldBooks, newBook]
+
+            const lastBook = oldBooks[oldBooks.length - 1]
+            const lastBookId = lastBook.id
+            newBook.id = lastBookId + 1;
+                        
+            fs.writeFile(bookDbPath, JSON.stringify(allBooks), (err) => {
+                if(err){
+                    res.writeHead(500);
+                    res.end(err)
+                }
+                res.end(JSON.stringify(newBook));
+            })
+        });
+       
+    })
     
 }
 
 const server = http.createServer(serverListener)
 server.listen(PORT, HOST_NAME, () => {
-   
+    booksDB = JSON.parse(fs.readFileSync(bookDbPath, 'utf8'));
     console.log("Server started")
 })

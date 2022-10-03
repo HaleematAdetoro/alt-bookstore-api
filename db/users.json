@@ -1,23 +1,21 @@
 [
     {
-        "username": "user1",
-        "email": "user1gmail.com",
-        "password": "test1",
-        "role": "admin",
+        "title": "Goodbye Janette",
+        "author": "Harold Robins",
+        "year": 1956,
         "id": 1
     },
     {
-        "username": "user2",
-        "email": "user2@gmail.com",
-        "password": "test2",
-        "role": "visitor",
+        "title": "Deadly Embrace",
+        "author": "Jackie Collins",
+        "year": 1967,
         "id": 2
     },
     {
-        "username": "user3",
-        "email": "user3@gmail.com",
-        "password": "test3",
-        "role": "admin",
+        "title": "The Smart Money Woman",
+        "author": "Arese Ugwu",
+        "year": 2016,
         "id": 3
     }
+  
 ]
